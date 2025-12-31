@@ -3,7 +3,7 @@
 import { Box, Bug, Globe, PlusCircle, Settings } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import type { NavItem } from "@/types";
-import { GetPeers, ListServices } from "../wailsjs/go/main/ServiceNode";
+import { GetPeers, ListServices } from "../wailsjs/go/main/App";
 import logo from "./assets/images/logo-universal@2x.png";
 import { Sidebar } from "./components/sidebar";
 import { ActiveServicesPanel } from "./components/tabs/active-services-panel";

@@ -21,32 +21,43 @@ export const Sidebar: FC<SidebarProps> = ({
 	revision,
 }) => {
 	return (
-		<aside className="w-64 bg-color-sidebar border-r border-color-sidebar-border flex flex-col">
+		<aside className="w-48 bg-[var(--color-sidebar)] border-r border-[var(--color-sidebar-border)] flex flex-col">
 			{/* Logo */}
-			<div className="p-6 flex items-center justify-center">
-				<img src={logoSrc} alt="Logo" className="w-14 h-14 object-contain" />
+			<div className="p-0 flex items-center justify-center">
+				<img src={logoSrc} alt="Logo" className="w-24 h-24 object-contain" />
 			</div>
 
 			{/* Navigation */}
-			<ScrollArea className="flex-1 px-2 py-4 space-y-1">
+			<ScrollArea className="flex-1 px-0 py-4 space-y-1">
 				{navItems.map((item) => {
 					const isActive = activeTab === item.label;
 					return (
 						<button
-							type="button"
 							key={item.label}
+							type="button"
 							onClick={() => onTabChange(item.label)}
 							className={clsx(
-								"flex items-center gap-3 w-full px-4 py-3 rounded-md transition-all duration-200",
+								"relative flex flex-col items-center gap-2 w-full py-2 pl-4 pr-4 transition-all duration-200",
 								isActive
-									? "bg-color-sidebar-primary text-color-sidebar-primary-foreground font-semibold"
-									: "text-color-sidebar-foreground hover:bg-color-sidebar-hover hover:text-color-sidebar-primary-foreground",
+									? "bg-[var(--color-sidebar-primary)]/20 font-semibold"
+									: "hover:bg-[var(--color-sidebar-primary)]/10",
 							)}
 						>
-							<item.icon className="w-5 h-5" />
-							<span>{item.label}</span>
+							{/* Left border */}
+							<div
+								className={clsx(
+									"absolute left-0 top-0 h-full bg-[var(--color-sidebar-primary)]",
+									isActive ? "w-2" : "w-0",
+								)}
+							/>
+
+							{/* Icon */}
+							<item.icon className="w-12 h-12 stroke-[1.5]" />
+							{/* Label */}
+							<span className="text-sm text-[var(--color-sidebar-foreground)]">{item.label}</span>
+							{/* Badge */}
 							{item.badge && (
-								<span className="ml-auto text-xs bg-color-accent text-color-accent-foreground px-2 py-0.5 rounded-full">
+								<span className="absolute top-2 right-2 text-xs bg-[var(--color-sidebar-accent)] text-[var(--color-sidebar-accent-foreground)] px-2 py-0.5 rounded-full">
 									{item.badge}
 								</span>
 							)}
@@ -56,9 +67,9 @@ export const Sidebar: FC<SidebarProps> = ({
 			</ScrollArea>
 
 			{/* Bottom info */}
-			<div className="px-4 py-3 border-t border-color-sidebar-border flex flex-col gap-1 text-xs text-color-muted-foreground">
+			<div className="px-4 py-3 border-t border-[var(--color-sidebar-border)] flex flex-col gap-1 text-xs text-[var(--color-muted-foreground)]">
 				<span>Revision {revision || "dev"}</span>
-				<a href="/" className="hover:underline text-color-muted-foreground">
+				<a href="/" className="hover:underline text-[var(--color-muted-foreground)]">
 					Report a bug
 				</a>
 			</div>

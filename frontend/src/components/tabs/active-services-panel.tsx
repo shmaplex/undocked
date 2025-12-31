@@ -34,7 +34,7 @@ export function ActiveServicesPanel({ services, error }: ActiveServicesPanelProp
 					</p>
 				</div>
 			) : (
-				<ScrollArea className="max-h-[400px] space-y-2 border border-color-border rounded-radius-md p-2">
+				<ScrollArea className="max-h-100 space-y-2 border border-color-border rounded-radius-md p-2">
 					{services.map((s) => (
 						<ServiceCard key={s.ServiceID} service={s} />
 					))}
