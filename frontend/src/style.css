@@ -1,0 +1,253 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* ----------------------- */
+/* Custom Dark Variant     */
+/* ----------------------- */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ----------------------- */
+/* Global Palette          */
+/* ----------------------- */
+:root {
+  /* --- Core Brand --- */
+  --primary: #3D5AFE;
+  --primary-foreground: #FFFFFF;
+  --accent: #00BFA5;
+  --accent-foreground: #FFFFFF;
+  --highlight: #FFAB40;
+  --highlight-foreground: #1A1C2C;
+
+  /* --- Status / Network --- */
+  --success: #4CAF50;
+  --error: #E53935;
+
+  /* --- Peer States --- */
+  --peer-active: #00BFA5;
+  --peer-inactive: #9E9E9E;
+  --peer-warning: #FFAB40;
+
+  /* --- Surface / Backgrounds --- */
+  --background: #F5F7FA;
+  --foreground: #1A1C2C;
+  --card: #FFFFFF;
+  --card-foreground: #1A1C2C;
+  --muted: #E0E0E0;
+  --muted-foreground: #6B6B6B;
+  --border: #D1D5DB;
+  --input: #FFFFFF;
+  --ring: #3D5AFE;
+
+  /* --- Sidebar / Panels --- */
+  --sidebar: #F0F2F5;
+  --sidebar-foreground: #1A1C2C;
+  --sidebar-primary: #3D5AFE;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #00BFA5;
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: #D1D5DB;
+  --sidebar-ring: #3D5AFE;
+
+  /* --- Charts --- */
+  --chart-1: #3D5AFE;
+  --chart-2: #00BFA5;
+  --chart-3: #FFAB40;
+  --chart-4: #4CAF50;
+  --chart-5: #E53935;
+
+  /* --- Typography / Radius --- */
+  --radius: 0.625rem;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+
+  /* --- Filters / inactive --- */
+  --filter-inactive: #E0E0E0;
+  --filter-inactive-foreground: #6B6B6B;
+  --destructive: #E53935;
+}
+
+/* ----------------------- */
+/* Dark Mode Overrides     */
+/* ----------------------- */
+.dark {
+  --primary: #4F7CFF;
+  --primary-foreground: #FFFFFF;
+  --accent: #00C2A5;
+  --accent-foreground: #FFFFFF;
+  --highlight: #FFB56E;
+  --highlight-foreground: #1A1C2C;
+
+  --success: #4CE87F;
+  --error: #FF4C4C;
+
+  --peer-active: #00C2A5;
+  --peer-inactive: #6B6B6B;
+  --peer-warning: #FFB56E;
+
+  --background: #1A1C2C;
+  --foreground: #F5F7FA;
+  --card: #272B3D;
+  --card-foreground: #F5F7FA;
+  --muted: #3A3F7C;
+  --muted-foreground: #F5F7FA;
+  --border: #3A3F7C;
+  --input: #23263B;
+  --ring: #4F7CFF;
+
+  --sidebar: #23263B;
+  --sidebar-foreground: #F5F7FA;
+  --sidebar-primary: #4F7CFF;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #00C2A5;
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: #3A3F7C;
+  --sidebar-ring: #4F7CFF;
+
+  --chart-1: #4F7CFF;
+  --chart-2: #00C2A5;
+  --chart-3: #FFB56E;
+  --chart-4: #4CE87F;
+  --chart-5: #FF4C4C;
+
+  --filter-inactive: #3A3F7C;
+  --filter-inactive-foreground: #F5F7FA;
+  --destructive: #FF4C4C;
+}
+
+/* ----------------------- */
+/* Tailwind Inline Theme   */
+/* ----------------------- */
+@theme inline {
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-warn: var(--highlight);
+  --color-warn-foreground: var(--highlight-foreground);
+
+  --color-success: var(--success);
+  --color-error: var(--error);
+
+  --color-peer-active: var(--peer-active);
+  --color-peer-inactive: var(--peer-inactive);
+  --color-peer-warning: var(--peer-warning);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --color-filter-inactive: var(--filter-inactive);
+  --color-filter-inactive-foreground: var(--filter-inactive-foreground);
+  --color-destructive: var(--destructive);
+
+  --radius: var(--radius);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --radius-2xl: var(--radius-2xl);
+  --radius-3xl: var(--radius-3xl);
+  --radius-4xl: var(--radius-4xl);
+}
+
+/* ----------------------- */
+/* Base Styles             */
+/* ----------------------- */
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: "Nunito", sans-serif;
+}
+
+.card {
+  background-color: var(--color-card);
+  color: var(--color-card-foreground);
+  border-radius: var(--radius);
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Buttons */
+.btn-primary {
+  background-color: var(--color-primary);
+  color: var(--color-primary-foreground);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius);
+  font-weight: 600;
+}
+
+.btn-accent {
+  background-color: var(--color-accent);
+  color: var(--color-accent-foreground);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius);
+  font-weight: 600;
+}
+
+/* Filters */
+.btn-filter {
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius);
+  border-width: 1px;
+  font-weight: 600;
+}
+
+.btn-filter-active {
+  background-color: var(--color-primary);
+  color: var(--color-primary-foreground);
+  border-color: var(--color-primary);
+}
+
+.btn-filter-inactive {
+  background-color: var(--color-filter-inactive);
+  color: var(--color-filter-inactive-foreground);
+  border-color: var(--color-filter-inactive);
+}
+
+/* Tailwind base extension */
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Animations */
+@keyframes fade {
+  0% { opacity: 0; transform: translateY(4px); }
+  10% { opacity: 1; transform: translateY(0); }
+  90% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-4px); }
+}
+
+.animate-fade {
+  animation: fade 2.4s ease forwards;
+}
