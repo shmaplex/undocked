@@ -240,6 +240,24 @@ body {
   }
 }
 
+/* Subtle punch for sidebar */
+.sidebar {
+  box-shadow: inset -1px 0 0 var(--color-sidebar-border);
+}
+
+.sidebar-item-active .sidebar-icon {
+  color: var(--color-sidebar-primary);
+}
+
+.sidebar-item:hover .sidebar-icon {
+  transform: translateY(-1px);
+}
+
+.sidebar-icon {
+  transition: transform 120ms ease, color 120ms ease;
+}
+
+
 /* Animations */
 @keyframes fade {
   0% { opacity: 0; transform: translateY(4px); }

@@ -69,7 +69,5 @@ export function PeerMap({ peers }: PeerMapProps) {
 		});
 	}, [peers]);
 
-	return (
-		<div id={mapContainerId} className="h-80 w-full border border-color-border rounded-radius-lg" />
-	);
+	return <div id={mapContainerId} className="h-80 w-full border border-border rounded-radius-lg" />;
 }

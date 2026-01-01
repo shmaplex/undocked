@@ -11,7 +11,7 @@ interface RecommendedServicesProps {
 
 export function RecommendedServices({ services, onSelect }: RecommendedServicesProps) {
 	return (
-		<div className="bg-color-muted p-4 rounded-radius-md flex flex-col h-74">
+		<div className="bg-muted p-4 rounded-xl flex flex-col h-74">
 			{" "}
 			{/* fixed height */}
 			<h3 className="font-semibold text-lg mb-2">Recommended Services</h3>

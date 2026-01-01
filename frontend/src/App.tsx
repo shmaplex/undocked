@@ -18,7 +18,7 @@ export default function App() {
 	const navItems: NavItem[] = [
 		{ label: "Add Service", icon: PlusCircle },
 		{ label: "Active Services", icon: Box },
-		{ label: "Peer Map", icon: Globe, badge: peers.length },
+		{ label: "Peers", icon: Globe, badge: peers.length },
 		{ label: "Settings", icon: Settings },
 		{ label: "Diagnostics", icon: Bug },
 	];
@@ -59,7 +59,7 @@ export default function App() {
 	}, [refreshServices]);
 
 	return (
-		<div className="flex min-h-screen bg-color-background text-color-foreground">
+		<div className="flex min-h-screen bg-background text-foreground">
 			<Sidebar
 				logoSrc={logo}
 				navItems={navItems}

@@ -20,20 +20,17 @@ interface ServiceCardProps {
  */
 export function ServiceCard({ service }: ServiceCardProps) {
 	return (
-		<Card className="hover:shadow-xl transition-shadow duration-200 bg-color-card border border-color-border rounded-radius-md">
+		<Card className="hover:shadow-xl transition-shadow duration-200 bg-card border border-border rounded-radius-md">
 			<CardHeader>
-				<CardTitle className="text-color-card-foreground text-lg">{service.ServiceID}</CardTitle>
+				<CardTitle className="text-card-foreground text-lg">{service.ServiceID}</CardTitle>
 				{service.DockerImage && (
-					<CardDescription className="text-color-muted-foreground text-sm truncate">
+					<CardDescription className="text-muted-foreground text-sm truncate">
 						{service.DockerImage}
 					</CardDescription>
 				)}
 			</CardHeader>
 			<CardContent className="flex justify-between items-center pt-2">
-				<Badge
-					variant="secondary"
-					className="bg-color-accent text-color-accent-foreground rounded-radius-sm"
-				>
+				<Badge variant="secondary" className="bg-accent text-accent-foreground rounded-radius-sm">
 					Port: {service.Port ?? "N/A"}
 				</Badge>
 			</CardContent>

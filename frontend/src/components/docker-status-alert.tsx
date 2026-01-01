@@ -3,7 +3,7 @@
 import { Play } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { EventsEmit } from "../../wailsjs/runtime/runtime";
+import { BrowserOpenURL, EventsEmit } from "../../wailsjs/runtime/runtime";
 
 interface DockerStatusAlertProps {
 	dockerRunning: boolean | null;
@@ -70,14 +70,16 @@ export function DockerStatusAlert({
 			{!dockerRunning && (
 				<p className="text-gray-400">
 					Or{" "}
-					<a
-						href="https://docs.docker.com/get-docker/"
-						target="_blank"
-						rel="noopener noreferrer"
-						className="underline text-blue-500"
+					<button
+						type="button"
+						className="underline text-blue-500 hover:text-blue-600"
+						onClick={(e) => {
+							e.stopPropagation();
+							BrowserOpenURL("https://docs.docker.com/get-docker/");
+						}}
 					>
 						start Docker manually
-					</a>
+					</button>
 				</p>
 			)}
 		</div>

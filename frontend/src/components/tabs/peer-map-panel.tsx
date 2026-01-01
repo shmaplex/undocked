@@ -25,17 +25,17 @@ export function PeerMapPanel({ peers }: PeerMapPanelProps) {
 		<div className="space-y-4">
 			<h2 className="text-xl font-semibold">Global Peer Map</h2>
 
+			<PeerMap peers={filteredPeers} />
+
 			<Input
 				type="text"
 				placeholder="Filter peers..."
 				value={filter}
 				onChange={(e) => setFilter(e.target.value)}
-				className="w-full max-w-md"
+				className="w-full max-w-xl"
 			/>
 
-			<PeerMap peers={filteredPeers} />
-
-			<Table className="mt-4">
+			<Table className="w-full">
 				<TableHeader>
 					<TableRow>
 						<TableHead>Peer ID</TableHead>
