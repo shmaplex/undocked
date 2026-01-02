@@ -12,4 +12,4 @@ export function ListServices():Promise<Array<main.Service>>;
 
 export function StartService(arg1:string,arg2:string,arg3:string):Promise<string>;
 
-export function StopService(arg1:string):Promise<void>;
+export function StopService(arg1:string):Promise<string>;

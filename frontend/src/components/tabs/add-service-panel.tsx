@@ -14,7 +14,7 @@ export function AddServicePanel({ onRefresh }: AddServicePanelProps) {
 	const [dockerImage, setDockerImage] = useState("");
 
 	return (
-		<div className="space-y-6">
+		<div className="space-y-3">
 			<DockerServiceCard
 				onRefresh={onRefresh}
 				serviceID={serviceID}

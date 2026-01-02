@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os/exec"
+	"strings"
 	"sync"
 	"time"
 
@@ -23,6 +24,8 @@ type Service struct {
 	ServiceID   string `json:"serviceID"`
 	DockerImage string `json:"dockerImage"`
 	Port        string `json:"port"`
+	Status      string `json:"status"` // starting | running | error
+	StartedAt   string `json:"startedAt"`
 }
 
 type PeerInfo struct {
@@ -46,6 +49,200 @@ type ServiceNode struct {
 	cancel context.CancelFunc
 }
 
+type dockerInspect struct {
+	State struct {
+		Running bool `json:"Running"`
+	} `json:"State"`
+	HostConfig struct {
+		PortBindings map[string][]struct {
+			HostPort string `json:"HostPort"`
+		} `json:"PortBindings"`
+	} `json:"HostConfig"`
+}
+
+func extractHostPort(dockerPorts string) string {
+	ports := strings.Split(dockerPorts, ",")
+	for _, p := range ports {
+		if strings.Contains(p, "->") {
+			left := strings.Split(p, "->")[0] // 0.0.0.0:6001
+			if strings.Contains(left, ":") {
+				return left[strings.LastIndex(left, ":")+1:] // => "6001"
+			}
+		}
+	}
+	return ""
+}
+
+func waitForContainerRunning(name string, timeout time.Duration) error {
+	deadline := time.Now().Add(timeout)
+
+	for time.Now().Before(deadline) {
+		exists, running, err := dockerContainerState(name)
+		if err != nil {
+			return err
+		}
+		if exists && running {
+			return nil
+		}
+		time.Sleep(500 * time.Millisecond)
+	}
+
+	return fmt.Errorf("container %s did not reach running state", name)
+}
+
+func dockerImageExists(image string) bool {
+	cmd := exec.Command("docker", "image", "inspect", image)
+	return cmd.Run() == nil
+}
+
+func pullDockerImage(ctx context.Context, image string) error {
+	cmd := exec.Command("docker", "pull", image)
+
+	stdout, _ := cmd.StdoutPipe()
+	stderr, _ := cmd.StderrPipe()
+
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+
+	go scanAndEmit(ctx, stdout)
+	go scanAndEmit(ctx, stderr)
+
+	return cmd.Wait()
+}
+
+func portAvailable(port string) bool {
+	cmd := exec.Command("lsof", "-i", ":"+port)
+	out, err := cmd.Output()
+	if err != nil {
+		// lsof returns error when nothing is listening → GOOD
+		return true
+	}
+	return len(out) == 0
+}
+
+func findAvailablePort(start int) (string, error) {
+	for p := start; p < start+1000; p++ {
+		if portAvailable(fmt.Sprintf("%d", p)) {
+			return fmt.Sprintf("%d", p), nil
+		}
+	}
+	return "", fmt.Errorf("no available ports found")
+}
+
+func runDockerCommand(args ...string) (string, error) {
+	cmd := exec.Command("docker", args...)
+	out, err := cmd.CombinedOutput()
+	return strings.TrimSpace(string(out)), err
+}
+
+func inspectContainer(name string) (*dockerInspect, error) {
+	out, err := exec.Command("docker", "inspect", name).Output()
+	if err != nil {
+		return nil, err
+	}
+
+	var data []dockerInspect
+	if err := json.Unmarshal(out, &data); err != nil || len(data) == 0 {
+		return nil, fmt.Errorf("invalid docker inspect output")
+	}
+
+	return &data[0], nil
+}
+
+func dockerContainerState(name string) (exists bool, running bool, err error) {
+	cmd := exec.Command(
+		"docker",
+		"inspect",
+		"--type=container",
+		"--format",
+		"{{.State.Running}}",
+		name,
+	)
+
+	out, err := cmd.Output()
+	if err != nil {
+		// IMPORTANT:
+		// Any inspect error == container does not exist
+		// Docker does not guarantee error strings
+		return false, false, nil
+	}
+
+	state := strings.TrimSpace(string(out))
+	return true, state == "true", nil
+}
+
+func scanAndEmit(ctx context.Context, r interface {
+	Read([]byte) (int, error)
+}) {
+	scanner := bufio.NewScanner(r)
+	for scanner.Scan() {
+		runtime.EventsEmit(ctx, "service-log", scanner.Text())
+	}
+}
+
+func streamDockerLogs(ctx context.Context, container string) {
+	cmd := exec.Command("docker", "logs", "-f", container)
+
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return
+	}
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		return
+	}
+
+	if err := cmd.Start(); err != nil {
+		return
+	}
+
+	go scanAndEmit(ctx, stdout)
+	go scanAndEmit(ctx, stderr)
+}
+
+func dockerRunningServices() ([]Service, error) {
+	cmd := exec.Command(
+		"docker", "ps",
+		"--format",
+		"{{.Names}}|{{.Image}}|{{.Ports}}",
+	)
+
+	out, err := cmd.Output()
+	if err != nil {
+		return nil, err
+	}
+
+	services := []Service{}
+	lines := strings.Split(strings.TrimSpace(string(out)), "\n")
+
+	for _, line := range lines {
+		parts := strings.Split(line, "|")
+		if len(parts) < 3 {
+			continue
+		}
+
+		port := extractHostPort(parts[2])
+
+		_, err := inspectContainer(parts[0])
+		startedAt := ""
+		if err == nil {
+			startedAt = time.Now().Format(time.RFC3339)
+		}
+
+		services = append(services, Service{
+			ServiceID:   parts[0],
+			DockerImage: parts[1],
+			Port:        port,
+			Status:      "running",
+			StartedAt:   startedAt,
+		})
+
+	}
+
+	return services, nil
+}
+
 // NewServiceNode creates a new ServiceNode with proper context.
 func NewServiceNode() *ServiceNode {
 	ctx, cancel := context.WithCancel(context.Background())
@@ -62,82 +259,124 @@ func (sn *ServiceNode) SetWailsContext(ctx context.Context) {
 	sn.ctx = ctx
 }
 
-// StartService launches a Docker container for the given service.
-func (sn *ServiceNode) StartService(serviceID, dockerImage, port string) (string, error) {
+func (sn *ServiceNode) StartService(serviceID, dockerImage, port string) string {
 	sn.mu.Lock()
 	defer sn.mu.Unlock()
 
-	if _, exists := sn.nodes[serviceID]; exists {
-		return "", fmt.Errorf("service already running")
+	// -----------------------------
+	// Validation
+	// -----------------------------
+	if serviceID == "" || dockerImage == "" || port == "" {
+		return "All fields are required."
 	}
 
-	cmd := exec.Command("docker", "run", "--name", serviceID, "-p", port+":"+port, dockerImage)
+	if err := exec.Command("docker", "info").Run(); err != nil {
+		return "Docker is not running. Please start Docker and try again."
+	}
 
-	stdout, err := cmd.StdoutPipe()
+	// -----------------------------
+	// Inspect container
+	// -----------------------------
+	exists, running, err := dockerContainerState(serviceID)
 	if err != nil {
-		return "", fmt.Errorf("failed to get stdout pipe: %w", err)
+		return fmt.Sprintf("Docker inspect failed: %v", err)
 	}
-	stderr, err := cmd.StderrPipe()
+
+	// -----------------------------
+	// CASE 1: Exists + Running
+	// -----------------------------
+	if exists && running {
+		go streamDockerLogs(sn.ctx, serviceID)
+		sn.BroadcastServices()
+		return fmt.Sprintf("Service %q is already running.", serviceID)
+	}
+
+	// -----------------------------
+	// CASE 2: Exists + Stopped → START
+	// -----------------------------
+	if exists && !running {
+		out, err := runDockerCommand("start", serviceID)
+		if err != nil {
+			return fmt.Sprintf("Docker failed to start container:\n%s", out)
+		}
+
+		if err := waitForContainerRunning(serviceID, 15*time.Second); err != nil {
+			return err.Error()
+		}
+
+		go streamDockerLogs(sn.ctx, serviceID)
+		sn.BroadcastServices()
+
+		return fmt.Sprintf("Service %q is now running.", serviceID)
+	}
+
+	// -----------------------------
+	// CASE 3: Container does NOT exist
+	// -----------------------------
+
+	// Ensure port availability
+	if !portAvailable(port) {
+		newPort, err := findAvailablePort(6000)
+		if err != nil {
+			return fmt.Sprintf("Port %s unavailable and no alternatives found.", port)
+		}
+		port = newPort
+	}
+
+	// Ensure image exists
+	if !dockerImageExists(dockerImage) {
+		runtime.EventsEmit(sn.ctx, "service-log", "Pulling Docker image: "+dockerImage)
+		if err := pullDockerImage(sn.ctx, dockerImage); err != nil {
+			return fmt.Sprintf("Failed to pull Docker image %q: %v", dockerImage, err)
+		}
+	}
+
+	// Run container
+	out, err := runDockerCommand(
+		"run",
+		"-d",
+		"--name", serviceID,
+		"-p", port+":6000",
+		dockerImage,
+	)
 	if err != nil {
-		return "", fmt.Errorf("failed to get stderr pipe: %w", err)
+		return fmt.Sprintf("Docker run failed:\n%s", out)
 	}
 
-	if err := cmd.Start(); err != nil {
-		return "", fmt.Errorf("failed to start docker container: %w", err)
+	if err := waitForContainerRunning(serviceID, 15*time.Second); err != nil {
+		return err.Error()
 	}
 
-	go func() {
-		scanner := bufio.NewScanner(stdout)
-		for scanner.Scan() {
-			runtime.EventsEmit(sn.ctx, "service-log", scanner.Text())
-		}
-	}()
-
-	go func() {
-		scanner := bufio.NewScanner(stderr)
-		for scanner.Scan() {
-			runtime.EventsEmit(sn.ctx, "service-log", scanner.Text())
-		}
-	}()
-
-	sn.nodes[serviceID] = cmd
+	go streamDockerLogs(sn.ctx, serviceID)
 	sn.BroadcastServices()
 
-	return fmt.Sprintf("Service %q is starting...", serviceID), nil
+	return fmt.Sprintf("Service %q is now running on port %s.", serviceID, port)
 }
 
 // StopService stops and removes a Docker container by serviceID.
-func (sn *ServiceNode) StopService(serviceID string) error {
+func (sn *ServiceNode) StopService(serviceID string) string {
 	sn.mu.Lock()
 	defer sn.mu.Unlock()
 
-	cmd, exists := sn.nodes[serviceID]
-	if !exists {
-		return fmt.Errorf("service not found")
+	_, _, err := dockerContainerState(serviceID)
+	if err != nil {
+		return "Failed to inspect service."
 	}
 
 	_ = exec.Command("docker", "stop", serviceID).Run()
 	_ = exec.Command("docker", "rm", serviceID).Run()
-	delete(sn.nodes, serviceID)
 
 	sn.BroadcastServices()
-	return cmd.Process.Kill()
+	return fmt.Sprintf("Service %q stopped.", serviceID)
 }
 
 // ListServices returns a slice of currently running services.
 func (sn *ServiceNode) ListServices() []Service {
-	sn.mu.Lock()
-	defer sn.mu.Unlock()
-
-	list := []Service{}
-	for id := range sn.nodes {
-		list = append(list, Service{
-			ServiceID:   id,
-			DockerImage: "", // optionally track DockerImage
-			Port:        "5000",
-		})
+	services, err := dockerRunningServices()
+	if err != nil {
+		return []Service{}
 	}
-	return list
+	return services
 }
 
 // InitP2P initializes the libp2p host and gossip-sub pubsub network.
@@ -189,26 +428,18 @@ func (sn *ServiceNode) listenAnnouncements(sub *pubsub.Subscription) {
 
 // BroadcastServices sends a list of local services to the P2P network.
 func (sn *ServiceNode) BroadcastServices() {
-	sn.mu.Lock()
-	defer sn.mu.Unlock()
-
 	if sn.pubsub == nil || sn.host == nil {
 		return
 	}
 
-	topic, err := sn.pubsub.Join("undocked-services")
-	if err != nil {
-		return
-	}
-
-	services := sn.ListServices()
-	peerInfo := PeerInfo{
+	info := PeerInfo{
 		ID:       sn.host.ID().String(),
-		Services: services,
+		Services: sn.ListServices(),
 		LastSeen: time.Now().Format(time.RFC3339),
 	}
 
-	data, _ := json.Marshal(peerInfo)
+	data, _ := json.Marshal(info)
+	topic, _ := sn.pubsub.Join("undocked-services")
 	_ = topic.Publish(sn.ctx, data)
 }
 

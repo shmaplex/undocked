@@ -6,40 +6,43 @@ import { ServiceCard } from "../service-card";
 
 interface ActiveServicesPanelProps {
 	services: any[];
-	error?: string; // optional error message if fetching fails
+	error?: string;
 }
 
 export function ActiveServicesPanel({ services, error }: ActiveServicesPanelProps) {
 	return (
-		<div className="space-y-4">
-			<h2 className="text-xl font-semibold">Active Services</h2>
+		<section className="space-y-4">
+			<header className="flex items-baseline justify-between">
+				<h2 className="text-lg font-semibold">
+					Active Services
+					<span className="ml-2 text-sm text-muted-foreground">({services.length})</span>
+				</h2>
+			</header>
 
-			<p className="text-sm text-muted-foreground">
-				This panel shows all services currently running on your node. You can start or stop services
-				from the "Add Service" tab. Each service shows its Docker image and port.
+			<p className="text-sm text-muted-foreground max-w-prose">
+				Services currently running on this node. Manage lifecycle from the
+				<strong className="mx-1">Add Service</strong>
+				tab.
 			</p>
 
-			{error && (
-				<Alert variant="destructive" className="mt-2">
-					<p>{error}</p>
-				</Alert>
-			)}
+			{error && <Alert variant="destructive">{error}</Alert>}
 
 			{services.length === 0 ? (
-				<div className="border border-border rounded-radius-md p-6 text-center text-muted-foreground">
-					<p>No active services detected.</p>
-					<p className="mt-2 text-sm">
-						To add a service, go to the <strong>Add Service</strong> tab and enter the service ID,
-						Docker image, and port.
+				<div className="rounded-lg bg-muted/40 p-6 text-center">
+					<div className="text-sm font-medium">No active services</div>
+					<p className="mt-1 text-xs text-muted-foreground">
+						Start a service to see it listed here.
 					</p>
 				</div>
 			) : (
-				<ScrollArea className="max-h-100 space-y-2 border border-border rounded-radius-md p-2">
-					{services.map((s) => (
-						<ServiceCard key={s.ServiceID} service={s} />
-					))}
+				<ScrollArea className="max-h-105">
+					<div className="grid gap-3">
+						{services.map((s) => (
+							<ServiceCard key={s.serviceID} service={s} />
+						))}
+					</div>
 				</ScrollArea>
 			)}
-		</div>
+		</section>
 	);
 }

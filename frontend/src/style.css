@@ -257,6 +257,31 @@ body {
   transition: transform 120ms ease, color 120ms ease;
 }
 
+/* Pixelated / data-map aesthetic */
+.peer-map-canvas {
+	filter: grayscale(100%) contrast(140%);
+	image-rendering: pixelated;
+	image-rendering: crisp-edges;
+}
+
+/* Remove leaflet UI leftovers just in case */
+.leaflet-control-container {
+	display: none;
+}
+
+/* Optional: subtle dot overlay */
+.peer-map-canvas::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	background-image: radial-gradient(
+		rgba(0, 0, 0, 0.15) 1px,
+		transparent 1px
+	);
+	background-size: 6px 6px;
+	mix-blend-mode: multiply;
+}
 
 /* Animations */
 @keyframes fade {

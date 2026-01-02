@@ -68,11 +68,11 @@ func (a *App) Greet(name string) string {
 }
 
 // Expose ServiceNode methods via App
-func (a *App) StartService(serviceID, dockerImage, port string) (string, error) {
+func (a *App) StartService(serviceID, dockerImage, port string) string {
 	return a.node.StartService(serviceID, dockerImage, port)
 }
 
-func (a *App) StopService(serviceID string) error {
+func (a *App) StopService(serviceID string) string {
 	return a.node.StopService(serviceID)
 }
 

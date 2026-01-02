@@ -4,6 +4,8 @@ export namespace main {
 	    serviceID: string;
 	    dockerImage: string;
 	    port: string;
+	    status: string;
+	    startedAt: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new Service(source);
@@ -14,6 +16,8 @@ export namespace main {
 	        this.serviceID = source["serviceID"];
 	        this.dockerImage = source["dockerImage"];
 	        this.port = source["port"];
+	        this.status = source["status"];
+	        this.startedAt = source["startedAt"];
 	    }
 	}
 	export class PeerInfo {

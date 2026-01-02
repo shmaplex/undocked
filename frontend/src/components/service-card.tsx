@@ -1,39 +1,49 @@
 "use client";
 
-import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export interface Service {
-	ServiceID: string;
-	DockerImage?: string;
-	Port?: string;
+	serviceID: string;
+	dockerImage?: string;
+	port?: string;
+	status?: "starting" | "running" | "error";
+	startedAt?: string;
 }
 
-interface ServiceCardProps {
-	/** The service object to display */
-	service: Service;
-}
+export function ServiceCard({ service }: { service: Service }) {
+	const statusColor =
+		service.status === "running"
+			? "bg-success text-white"
+			: service.status === "starting"
+				? "bg-warn text-warn-foreground"
+				: "bg-destructive text-destructive-foreground";
 
-/**
- * Displays a service card with its ID, Docker image, and port.
- */
-export function ServiceCard({ service }: ServiceCardProps) {
 	return (
-		<Card className="hover:shadow-xl transition-shadow duration-200 bg-card border border-border rounded-radius-md">
-			<CardHeader>
-				<CardTitle className="text-card-foreground text-lg">{service.ServiceID}</CardTitle>
-				{service.DockerImage && (
-					<CardDescription className="text-muted-foreground text-sm truncate">
-						{service.DockerImage}
-					</CardDescription>
-				)}
-			</CardHeader>
-			<CardContent className="flex justify-between items-center pt-2">
-				<Badge variant="secondary" className="bg-accent text-accent-foreground rounded-radius-sm">
-					Port: {service.Port ?? "N/A"}
-				</Badge>
-			</CardContent>
-		</Card>
+		<div className="rounded-lg bg-card shadow-sm hover:shadow-md transition p-4">
+			<div className="flex items-start justify-between gap-4">
+				<div className="min-w-0">
+					<div className="font-medium truncate">{service.serviceID}</div>
+
+					{service.dockerImage && (
+						<div className="text-xs text-muted-foreground truncate mt-0.5">
+							{service.dockerImage}
+						</div>
+					)}
+				</div>
+
+				<span className={`px-2 py-0.5 text-xs rounded-full ${statusColor}`}>
+					{service.status ?? "unknown"}
+				</span>
+			</div>
+
+			<div className="mt-3 flex justify-between text-xs text-muted-foreground">
+				<div>
+					Port <span className="text-foreground">{service.port ?? "—"}</span>
+				</div>
+
+				{service.startedAt && <div>Started {new Date(service.startedAt).toLocaleTimeString()}</div>}
+			</div>
+		</div>
 	);
 }

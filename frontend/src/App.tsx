@@ -54,7 +54,7 @@ export default function App() {
 
 	useEffect(() => {
 		refreshServices();
-		const interval = setInterval(refreshServices, 5000);
+		const interval = setInterval(refreshServices, 6000);
 		return () => clearInterval(interval);
 	}, [refreshServices]);
 
