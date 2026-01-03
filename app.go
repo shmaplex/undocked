@@ -1,8 +1,12 @@
+// ==========================
+// app.go
+// ==========================
 package main
 
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"os/exec"
 	"time"
 
@@ -10,8 +14,10 @@ import (
 )
 
 type App struct {
-	ctx  context.Context
-	node *ServiceNode
+	ctx    context.Context
+	node   *ServiceNode
+	api    *WebAPI
+	server *http.Server
 }
 
 func NewApp() *App {
@@ -62,6 +68,14 @@ func (a *App) Startup(ctx context.Context) {
 	}()
 }
 
+func (a *App) GetNodeSnapshot() NodeSnapshot {
+	return NodeSnapshot{
+		Services: a.node.ListServices(),
+		Peers:    a.node.GetPeers(),
+		Stats:    a.node.stats.Snapshot(),
+	}
+}
+
 // Greet example function
 func (a *App) Greet(name string) string {
 	return fmt.Sprintf("Hello %s, It's show time!", name)
@@ -78,6 +92,10 @@ func (a *App) StopService(serviceID string) string {
 
 func (a *App) ListServices() []Service {
 	return a.node.ListServices()
+}
+
+func (a *App) ListRecommendedServices() []ServiceProfile {
+	return a.node.ListRecommendedServices()
 }
 
 func (a *App) GetPeers() []PeerInfo {

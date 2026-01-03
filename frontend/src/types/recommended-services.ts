@@ -3,7 +3,8 @@
 export interface RecommendedService {
 	name: string;
 	image: string;
-	description: string;
-	hubLink: string;
-	iconUrl?: string; // optional direct URL to Docker icon/logo
+	description?: string;
+	defaultPort?: string;
+	hubLink?: string;
+	iconUrl?: string;
 }

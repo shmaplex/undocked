@@ -4,9 +4,13 @@ import {main} from '../models';
 
 export function CheckDockerStatus():Promise<void>;
 
+export function GetNodeSnapshot():Promise<main.NodeSnapshot>;
+
 export function GetPeers():Promise<Array<main.PeerInfo>>;
 
 export function Greet(arg1:string):Promise<string>;
+
+export function ListRecommendedServices():Promise<Array<main.ServiceProfile>>;
 
 export function ListServices():Promise<Array<main.Service>>;
 

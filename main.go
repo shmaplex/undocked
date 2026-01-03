@@ -13,7 +13,7 @@ import (
 var assets embed.FS
 
 func main() {
-	app := NewApp() // App struct now wraps ServiceNode
+	app := NewApp()
 
 	err := wails.Run(&options.App{
 		Title:  "undocked",
@@ -23,9 +23,9 @@ func main() {
 			Assets: assets,
 		},
 		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
-		OnStartup:        app.Startup, // call App.startup
+		OnStartup:        app.Startup,
 		Bind: []interface{}{
-			app, // bind App to Wails
+			app,
 		},
 	})
 

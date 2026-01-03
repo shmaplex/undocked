@@ -7,16 +7,16 @@ import { BrowserOpenURL } from "../../wailsjs/runtime/runtime";
 
 interface RecommendedServiceCardProps {
 	service: RecommendedService;
-	onSelect: (name: string, image: string) => void;
+	onSelect: (service: RecommendedService) => void;
 }
 
 export function RecommendedServiceCard({ service, onSelect }: RecommendedServiceCardProps) {
 	return (
 		<Card
 			className="flex flex-col md:flex-row items-start md:items-center p-4 gap-4 hover:shadow-lg transition-shadow cursor-pointer bg-background rounded-md"
-			onClick={() => onSelect(service.name, service.image)}
+			onClick={() => onSelect(service)}
 		>
-			{/* Icon / Avatar */}
+			{/* Icon */}
 			<div className="shrink-0 w-16 h-16 rounded-md overflow-hidden bg-muted-foreground flex items-center justify-center">
 				{service.iconUrl ? (
 					<img src={service.iconUrl} alt={service.name} className="w-full h-full object-contain" />
@@ -29,7 +29,7 @@ export function RecommendedServiceCard({ service, onSelect }: RecommendedService
 				)}
 			</div>
 
-			{/* Main info */}
+			{/* Info */}
 			<div className="flex-1 flex flex-col md:flex-row md:items-center md:justify-between w-full gap-2">
 				<div className="flex flex-col">
 					<h4 className="font-semibold text-lg truncate">
@@ -38,14 +38,18 @@ export function RecommendedServiceCard({ service, onSelect }: RecommendedService
 							className="text-left hover:underline"
 							onClick={(e) => {
 								e.stopPropagation();
-								BrowserOpenURL(service.hubLink);
+								if (service.hubLink) {
+									BrowserOpenURL(service.hubLink);
+								}
 							}}
 						>
 							{service.name}
 						</button>
 					</h4>
 
-					<p className="text-sm text-muted-foreground mt-1">{service.description}</p>
+					{service.description && (
+						<p className="text-sm text-muted-foreground mt-1">{service.description}</p>
+					)}
 				</div>
 			</div>
 		</Card>

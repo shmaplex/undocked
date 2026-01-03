@@ -30,9 +30,11 @@ export default function App() {
 
 			setServices(
 				rawServices.map((s: any) => ({
-					ServiceID: s.ID ?? s.ServiceID ?? s.Name,
-					DockerImage: s.DockerImage,
-					Port: s.Port,
+					serviceID: s.serviceID,
+					dockerImage: s.dockerImage,
+					port: s.hostPort,
+					status: s.status,
+					startedAt: s.startedAt,
 				})),
 			);
 
@@ -40,9 +42,11 @@ export default function App() {
 				rawPeers.map((p: any) => ({
 					ID: p.ID ?? p.NodeID ?? "unknown",
 					Services: (p.Services ?? []).map((s: any) => ({
-						ServiceID: s.ID ?? s.ServiceID ?? s.Name,
-						DockerImage: s.DockerImage,
-						Port: s.Port,
+						ServiceID: s.serviceID,
+						Port: s.hostPort,
+						Requests: s.requests,
+						Errors: s.errors,
+						Bandwidth: s.bandwidth,
 					})),
 					LastSeen: p.LastSeen,
 				})),
@@ -52,10 +56,20 @@ export default function App() {
 		}
 	}, []);
 
+	// 🔑 INITIAL LOAD (THIS WAS MISSING)
 	useEffect(() => {
 		refreshServices();
-		const interval = setInterval(refreshServices, 6000);
-		return () => clearInterval(interval);
+	}, [refreshServices]);
+
+	// 🔁 LIVE UPDATES FROM GO
+	useEffect(() => {
+		window.runtime.EventsOn("service-stats", refreshServices);
+		window.runtime.EventsOn("service-error", refreshServices);
+
+		return () => {
+			window.runtime.EventsOff("service-stats");
+			window.runtime.EventsOff("service-error");
+		};
 	}, [refreshServices]);
 
 	return (
@@ -71,7 +85,7 @@ export default function App() {
 			<main className="flex-1 p-6 space-y-6 overflow-auto">
 				{activeTab === "Add Service" && <AddServicePanel onRefresh={refreshServices} />}
 				{activeTab === "Active Services" && <ActiveServicesPanel services={services} />}
-				{activeTab === "Peer Map" && <PeerMapPanel peers={peers} />}
+				{activeTab === "Peers" && <PeerMapPanel peers={peers} />}
 			</main>
 		</div>
 	);

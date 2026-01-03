@@ -38,7 +38,7 @@ export function ActiveServicesPanel({ services, error }: ActiveServicesPanelProp
 				<ScrollArea className="max-h-105">
 					<div className="grid gap-3">
 						{services.map((s) => (
-							<ServiceCard key={s.serviceID} service={s} />
+							<ServiceCard key={s.ServiceID} service={s} />
 						))}
 					</div>
 				</ScrollArea>

@@ -6,12 +6,20 @@ export function CheckDockerStatus() {
   return window['go']['main']['App']['CheckDockerStatus']();
 }
 
+export function GetNodeSnapshot() {
+  return window['go']['main']['App']['GetNodeSnapshot']();
+}
+
 export function GetPeers() {
   return window['go']['main']['App']['GetPeers']();
 }
 
 export function Greet(arg1) {
   return window['go']['main']['App']['Greet'](arg1);
+}
+
+export function ListRecommendedServices() {
+  return window['go']['main']['App']['ListRecommendedServices']();
 }
 
 export function ListServices() {

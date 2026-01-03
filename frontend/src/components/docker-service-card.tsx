@@ -16,8 +16,9 @@ export function DockerServiceCard({
 	setServiceID,
 	dockerImage,
 	setDockerImage,
+	port,
+	setPort,
 }: any) {
-	const [port, setPort] = useState("6000");
 	const [serviceState, setServiceState] = useState<ServiceAction>("idle");
 	const [status, setStatus] = useState<string | null>(null);
 	const [error, setError] = useState<string | null>(null);
@@ -32,7 +33,7 @@ export function DockerServiceCard({
 
 	useEffect(() => {
 		const unsub = EventsOn("service-log", (msg: string) => {
-			setLogs((p) => p + msg + "\n");
+			setLogs((p) => `${p + msg}\n`);
 		});
 		return unsub;
 	}, []);
